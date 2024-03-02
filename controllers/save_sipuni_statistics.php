@@ -8,41 +8,48 @@
         $table -> type = $line[0];
         $table -> status = $line[1];
         $table -> time = $line[2];
-        $table -> id_schema = $line[3];
+        $table -> idschema = $line[3];
         $table -> schema = $line[4];
-        $table -> outgoing_line = $line[5];
-        $table -> from_phone = $line[6];
-        $table -> to_phone = $line[7];
-        $table -> whoAnswer = $line[8];
-        $table -> durationAll = $line[9];
-        $table -> durationTalking = $line[10];
-        $table -> id_recording = $line[13];
-        $table -> id_call = $line[17];
-        $table -> new_client = $line[19];
+        $table -> outgoingline = $line[5];
+        $table -> fromphone = $line[6];
+        $table -> tophone = $line[7];
+        $table -> whoanswer = $line[8];
+        $table -> durationall = $line[9];
+        $table -> durationtalking = $line[10];
+        $table -> idrecording = $line[13];
+        $table -> idcall = $line[17];
+        $table -> newclient = $line[19];
         $table -> mark = $line[14];
         return $table;   
     }
-
-    foreach($sipuni_statistics as $call ) {
-        if($call[0]!=null&&$call[0]!=''){
-            $sipuni_statistics_table = R::dispense('sipunistatisticstable');
-            $line = explode(";", $call[0]);
-            $checkPhone = false;
-            $typeUnic = 'Входящий';
-            $phone = str_replace("+", '', $line[6]);
-            //СОХРАНЕНИЕ В БД:
-            save_in_BD($sipuni_statistics_table, $line, $project);
-            if($unic) {
-                $checkPhone = R::findOne('sipunistatisticstable', 'from_phone = ? AND type = ?', array($phone, $typeUnic));      
+    $sipuni_statistics_count = count($sipuni_statistics);
+    sleep(1);
+    $batch_size = 100;
+    for ($i = 0; $i < $sipuni_statistics_count; $i += $batch_size) {
+        $batch = array_slice($sipuni_statistics, $i, $batch_size);
+        foreach ($batch as $call) {
+            if ($call[0] != null && $call[0] != '') {
+                $sipuni_statistics_table = R::dispense('sipunistatisticstable');
+                $line = explode(";", $call[0]);
+                $checkPhone = false;
+                $typeUnic = 'Входящий';
+                $phone = str_replace("+", '', $line[6]);
+                //СОХРАНЕНИЕ В БД:
+                save_in_BD($sipuni_statistics_table, $line, $project);
+                if($unic) {
+                    $checkPhone = R::findOne('sipunistatisticstable', 'fromphone = ? AND type = ?', array($phone, $typeUnic));      
+                }
+                if(!$checkPhone||$checkPhone==""){
+                // generate_new_array($sipuni_statistics_table);
+                array_push($array_with_data, $sipuni_statistics_table);
+                }
+                R::store($sipuni_statistics_table);
+                
             }
-            if(!$checkPhone||$checkPhone==""){
-               // generate_new_array($sipuni_statistics_table);
-               array_push($array_with_data, $sipuni_statistics_table);
-            }
-            R::store($sipuni_statistics_table);
-            $checkSaveBD = true;
         }
+        sleep(1);
     }
+    $checkSaveBD = true;
     $date_length = count($array_with_data);
     $array_for_import = array(
         'data' => $array_with_data,

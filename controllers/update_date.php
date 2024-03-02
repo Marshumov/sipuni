@@ -12,6 +12,7 @@ if($checkSaveBD) {
     $update_info ->last_time = $time;
     R::store($update_info);
     $checkUpdateTime = true;
+    telegram_post_notification("Обновление времени до ".$time, $telegram_token, $telegram_chat_id);
 }
 
 ?>

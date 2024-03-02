@@ -15,6 +15,8 @@
     //Базовые настройки получения времени
     $date = date('d.m.Y');
     $time = date('H.i');
+    //Сколько новых данных получено
+    $date_length = 0;
     function day_minus_step($date, $minus_day) {
         //Отнимаем несколько месяцев для получения истории данных
         return date('d.m.Y', strtotime("-".$minus_day." days", strtotime($date)));
@@ -37,6 +39,7 @@
     $first_work = false;
     R::freeze( false );
     $update_info = R::findOne('updateinfo', 'project = ?', array($project));
+    sleep(2);
     if($update_info==null||$update_info=="") {
         $from = date_minus_step($date, $minus_months);
         $first_work = true;
@@ -54,10 +57,11 @@
         $timeTo = '23.59';
     }
     //Получаем данные
-    telegram_post_notification("Начинаю получать данные", $telegram_token, $telegram_chat_id);
+    //telegram_post_notification("Начинаю получать данные", $telegram_token, $telegram_chat_id);
     sleep(1);
     require_once "./controllers/get_sipuni_statistics.php";
     require_once "./controllers/save_sipuni_statistics.php";
+    sleep(1);
     require_once "./controllers/update_date.php";
     require_once "./controllers/post_to_sheet.php";
 
